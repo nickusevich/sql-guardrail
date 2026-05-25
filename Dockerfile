@@ -30,8 +30,13 @@ ENV SQLGUARD_POLICY_PATH=/etc/sqlguard/policy.yml \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Install the wheel with the [server] extra in a single layer.
+# `*.whl[server]` is NOT shell-globbable (the [...] is parsed as a char
+# class with no matches), so the wheel path has to be expanded into a
+# variable before pip sees it.
 COPY --from=builder /dist/*.whl /tmp/
-RUN pip install /tmp/*.whl[server] \
+RUN set -eux \
+    && WHEEL=$(ls /tmp/*.whl) \
+    && pip install "${WHEEL}[server]" \
     && rm -f /tmp/*.whl
 
 # Non-root user. uid:gid intentionally non-zero; matches the K8s
