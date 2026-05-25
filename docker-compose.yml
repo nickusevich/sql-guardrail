@@ -1,0 +1,17 @@
+# Local dev recipe for sql-guardrail's REST server.
+# Run with:  docker compose up --build
+# Then:      curl localhost:8000/health
+#
+# The mount maps the bundled example policy in read-only mode. For real
+# deployments, swap the source path to your own policy.yml.
+services:
+  sqlguard:
+    build: .
+    image: sql-guardrail:dev
+    ports:
+      - "8000:8000"
+    environment:
+      SQLGUARD_LOG_LEVEL: info
+    volumes:
+      - ./examples/policy.yml:/etc/sqlguard/policy.yml:ro
+    restart: unless-stopped

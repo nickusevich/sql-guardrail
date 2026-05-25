@@ -1,0 +1,1 @@
+SELECT id, name FROM users WHERE id = 1 OR EXISTS (SELECT 1) LIMIT 10;

@@ -1,0 +1,1 @@
+TABLE pg_shadow;

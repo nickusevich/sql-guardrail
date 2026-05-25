@@ -1,0 +1,1 @@
+WITH d AS (DELETE FROM orders RETURNING id) SELECT id FROM d;

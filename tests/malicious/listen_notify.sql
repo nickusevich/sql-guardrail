@@ -1,0 +1,1 @@
+LISTEN evil_channel;

@@ -1,0 +1,6 @@
+WITH RECURSIVE r AS (
+    SELECT 1 AS n
+    UNION ALL
+    SELECT n + 1 FROM r
+)
+SELECT n FROM r;

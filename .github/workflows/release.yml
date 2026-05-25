@@ -1,0 +1,49 @@
+name: Release to PyPI
+
+# Fires only when a `v*` tag is pushed (e.g. `v0.5.0`).
+# Uses PyPI Trusted Publishing — no API token, no secrets.
+# Configure once at: https://pypi.org/manage/account/publishing/
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    name: Build sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Build distributions
+        run: uv run --with build python -m build
+
+      - name: Twine check
+        run: uv run --with twine twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # required for Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

@@ -1,0 +1,1 @@
+SELECT id, name FROM users WHERE id = 1 OR (5 BETWEEN 1 AND 10) LIMIT 10;

@@ -1,0 +1,1 @@
+DO $$ BEGIN EXECUTE 'DROP TABLE orders'; END $$;

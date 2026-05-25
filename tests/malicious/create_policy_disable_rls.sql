@@ -1,0 +1,1 @@
+CREATE POLICY pol ON orders FOR SELECT USING (true);

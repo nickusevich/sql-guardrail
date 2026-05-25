@@ -1,0 +1,48 @@
+# Reference policy for sql-guardrail. Every supported field is shown with
+# its default; remove any line to fall back to the default.
+
+read_only: true                    # block writes, locks, SELECT INTO, DML in CTEs
+
+tables:
+  - name: orders
+    allow_columns: [id, product_name, account_id, created_at, total]
+    large: true                    # require an effective LIMIT on every query touching this table
+    require_predicate:             # the multi-tenant guarantee
+      column: account_id
+      op: "="
+      value: "${tenant_id}"        # resolved from the `context=` arg of verify() per request
+
+  - name: users
+    allow_columns: [id, name]
+    deny_columns: [password_hash, ssn, email]   # blocked in ANY AST position
+
+forbid:
+  always_true_predicates: true     # block `WHERE 1=1`, `WHERE TRUE`, every constant-folded shape
+  select_star: true                # block `SELECT *` and `alias.*` (allows `count(*)`)
+  cartesian_join: true             # block CROSS JOIN and comma-joins without ON
+  recursive_cte: true              # block WITH RECURSIVE (executes unboundedly)
+
+limits:
+  max_sql_length: 20000            # pre-parse char cap — bounds validator CPU on adversarial input
+  max_ast_nodes: 5000              # post-parse node cap — catches expression-tree-bomb inputs
+  max_joins: 10                    # cap distinct joins per query
+  max_subquery_depth: 8            # cap nested SELECT depth (CTEs reset the counter)
+  max_limit_value: 10000           # reject `LIMIT N` where N > cap (or non-literal LIMIT)
+  max_offset_value: 100000         # reject `OFFSET N` where N > cap (scan-and-skip DoS)
+
+# Opt-in: when set, every function call must be on this list. Strongly
+# recommended for production. Must include `cast` if your queries use
+# `::cast` or `CAST(... AS ...)`, and every aggregate / built-in your
+# workload uses.
+allowed_functions:
+  - cast
+  - count
+  - sum
+  - avg
+  - min
+  - max
+  - coalesce
+  - lower
+  - upper
+  - extract
+  - length
