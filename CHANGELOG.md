@@ -4,6 +4,15 @@ Notable changes per release. See
 [GitHub Releases](https://github.com/nickusevich/sql-guardrail/releases)
 for full release notes.
 
+## [0.5.1] — 2026-06-07
+
+Docs only: rewrote the README as a lean landing page, made its in-repo
+links absolute so they resolve on PyPI, and added docs/POLICY.md and
+docs/DEPLOYMENT.md. No functional changes — public API and behavior are
+identical to 0.5.0.
+
+[0.5.1]: https://github.com/nickusevich/sql-guardrail/releases/tag/v0.5.1
+
 ## [0.5.0] — 2026-05-25
 
 First public release. Static SQL safety validator for LLM-generated

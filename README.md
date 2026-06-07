@@ -3,7 +3,7 @@
 [![CI](https://github.com/nickusevich/sql-guardrail/actions/workflows/ci.yml/badge.svg)](https://github.com/nickusevich/sql-guardrail/actions/workflows/ci.yml)
 [![PyPI version](https://img.shields.io/pypi/v/sql-guardrail.svg)](https://pypi.org/project/sql-guardrail/)
 [![Python versions](https://img.shields.io/pypi/pyversions/sql-guardrail.svg)](https://pypi.org/project/sql-guardrail/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/nickusevich/sql-guardrail/blob/main/LICENSE)
 
 **A safety check for SQL that an LLM wrote.**
 
@@ -80,8 +80,8 @@ limits:
 `tenant_id` must come from the authenticated session, never the LLM prompt** —
 if the LLM picks its own tenant id, every tenant rule collapses.
 
-See [`examples/policy.yml`](examples/policy.yml) for a fully-annotated policy
-and [`examples/backend_integration.py`](examples/backend_integration.py) for a
+See [`examples/policy.yml`](https://github.com/nickusevich/sql-guardrail/blob/main/examples/policy.yml) for a fully-annotated policy
+and [`examples/backend_integration.py`](https://github.com/nickusevich/sql-guardrail/blob/main/examples/backend_integration.py) for a
 FastAPI-style request handler.
 
 > Validate the string you actually run. If you strip comments or normalize the
@@ -96,7 +96,7 @@ FastAPI-style request handler.
 - **Function allowlist** (opt-in) — every function call must be approved; closes `pg_sleep`, `pg_read_file`, and unvetted helpers.
 - **DoS caps** — joins, nesting depth, `LIMIT`, `OFFSET`, SQL length, AST size; blocks cartesian and recursive queries.
 
-Full field reference and per-check semantics: [**`docs/POLICY.md`**](docs/POLICY.md).
+Full field reference and per-check semantics: [**`docs/POLICY.md`**](https://github.com/nickusevich/sql-guardrail/blob/main/docs/POLICY.md).
 
 ## Where it fits
 
@@ -131,7 +131,7 @@ database layers too.
 - **Plan-time cost surprises** — only the planner knows; use `statement_timeout`.
 - **Bugs in your auth** — if the tenant id comes from the LLM, not the session, the library can't know.
 
-More in [`docs/POLICY.md`](docs/POLICY.md#what-this-does-not-catch).
+More in [`docs/POLICY.md`](https://github.com/nickusevich/sql-guardrail/blob/main/docs/POLICY.md#what-this-does-not-catch).
 
 ## CLI & HTTP server
 
@@ -151,19 +151,19 @@ docker run --rm -p 8000:8000 \
 
 `POST /verify` returns the verdict in the body; `GET /docs` is the OpenAPI UI.
 **The server does no auth — keep it internal.** Exit codes, every endpoint, and
-env config live in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+env config live in [`docs/DEPLOYMENT.md`](https://github.com/nickusevich/sql-guardrail/blob/main/docs/DEPLOYMENT.md).
 
 ## Docs
 
-- [`docs/POLICY.md`](docs/POLICY.md) — every policy field and what each check
+- [`docs/POLICY.md`](https://github.com/nickusevich/sql-guardrail/blob/main/docs/POLICY.md) — every policy field and what each check
   does, the result object, and what the library doesn't catch.
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — CLI flags and exit codes, HTTP
+- [`docs/DEPLOYMENT.md`](https://github.com/nickusevich/sql-guardrail/blob/main/docs/DEPLOYMENT.md) — CLI flags and exit codes, HTTP
   endpoints, env-var config, Docker.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — the pipeline, module map,
+- [`docs/ARCHITECTURE.md`](https://github.com/nickusevich/sql-guardrail/blob/main/docs/ARCHITECTURE.md) — the pipeline, module map,
   and the four structural defenses.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — local checks, test layout, how to add
+- [`CONTRIBUTING.md`](https://github.com/nickusevich/sql-guardrail/blob/main/CONTRIBUTING.md) — local checks, test layout, how to add
   a rule.
-- [`SECURITY.md`](SECURITY.md) — how to report a bypass privately.
+- [`SECURITY.md`](https://github.com/nickusevich/sql-guardrail/blob/main/SECURITY.md) — how to report a bypass privately.
 
 The test suite is **500+ tests** organized by attack class, run on Python
 3.10–3.13 across Ubuntu and macOS with `ruff`, `mypy --strict`, and coverage.
@@ -179,4 +179,4 @@ meaning. 1.0 will commit to the public API: `verify`, `Policy`,
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](https://github.com/nickusevich/sql-guardrail/blob/main/LICENSE).
