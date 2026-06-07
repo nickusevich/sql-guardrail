@@ -1,0 +1,40 @@
+# Local git hooks. Enable once with: uv run pre-commit install
+# CI also runs these via `pre-commit run --all-files` (see .github/workflows/ci.yml).
+#
+# Split by stage: fast lint + file hygiene on commit; mypy on push (it's the
+# slow one, and would nag on every commit otherwise).
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Keep in sync with the ruff pin in pyproject [dev]; `pre-commit autoupdate`
+    # bumps this to the latest released tag.
+    rev: v0.15.14
+    hooks:
+      - id: ruff
+        args: [--fix]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml          # policy.yml, examples/, workflows, docker-compose
+      - id: check-json          # tests/malicious/_manifest.json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  # mypy via a local hook so it runs in the project env (sees sqlglot/pydantic),
+  # not pre-commit's isolated venv. Assumes uv (the documented dev setup); if you
+  # use a plain venv instead, change entry to `mypy src` with the venv active.
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy --strict
+        entry: uv run mypy src
+        language: system
+        types: [python]
+        pass_filenames: false   # type-check the whole package, not just changed files
+        require_serial: true
+        stages: [pre-push]

@@ -9,6 +9,7 @@ contributions that extend the surface should match the existing design.
 git clone https://github.com/nickusevich/sql-guardrail.git
 cd sql-guardrail
 uv sync --extra dev --extra server
+uv run pre-commit install        # enable git hooks: lint on commit, mypy on push
 uv run pytest
 ```
 
@@ -25,6 +26,14 @@ ruff check src tests        # lint
 mypy src                    # types (--strict in pyproject)
 pytest                      # all tests should pass
 pytest --cov=sqlguard       # coverage
+```
+
+With the git hooks installed (see Quick start), `ruff` and the file-hygiene
+checks run on `git commit` and `mypy` runs on `git push`. To run every hook
+against the whole tree on demand:
+
+```bash
+uv run pre-commit run --all-files
 ```
 
 CI runs the same checks across Python 3.10 / 3.11 / 3.12 / 3.13 on
@@ -46,7 +55,7 @@ map. The sections you'll touch most often:
 ## Adding tests
 
 - **Security regressions** → `tests/test_security.py`, grouped by
-  attack class (not by audit round). See the section headers — pick
+  attack class. See the section headers — pick
   the matching one and add to the parametrized list.
 - **Unit tests** → `tests/unit/test_<rule>.py` for development feedback
   on a single rule.
