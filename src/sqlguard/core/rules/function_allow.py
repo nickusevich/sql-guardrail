@@ -2,8 +2,8 @@
 
 When ``policy.allowed_functions`` is set, every function call must be on the
 list — anything else gets FUNCTION_NOT_ALLOWED. This is the "we forgot to add
-X to the denylist" defense: instead of growing a denylist with every audit
-round, default-deny any function the policy hasn't explicitly approved.
+X to the denylist" defense: instead of growing a denylist over time,
+default-deny any function the policy hasn't explicitly approved.
 
 Walks every ``exp.Func`` (the base class), which covers both:
 
@@ -64,7 +64,7 @@ _CANONICAL_ALIASES: dict[type[exp.Expression], frozenset[str]] = {
 # below is the full intersection at sqlglot ~26.x. If a future sqlglot
 # release adds another keyword-form Func subclass (e.g. ``NULLIF`` is
 # already exp.Nullif → ``NULLIF`` is a function name users CAN allowlist,
-# so it's correctly NOT exempted), audit the diff and update this tuple.
+# so it's correctly NOT exempted), review the diff and update this tuple.
 _OPERATOR_KEYWORDS: tuple[type[exp.Expression], ...] = (
     exp.And,
     exp.Or,

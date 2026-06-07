@@ -23,9 +23,9 @@
      `require_predicate` rules (the multi-tenant guarantee). Every alias
      of a policy-protected table must AND-include the required predicate.
 
-The catchall replaces the per-PG-function constant evaluator the v1-v5
-audits built up. Layers 2-4 (least-priv role, RLS, statement_timeout)
-catch anything that slips past — the validator is a tripwire, not the
+The catchall is structural by design rather than a per-function constant
+evaluator. Layers 2-4 (least-priv role, RLS, statement_timeout) catch
+anything that slips past — the validator is a tripwire, not the
 perimeter.
 """
 from __future__ import annotations
@@ -220,8 +220,7 @@ def _check_always_true(expression: exp.Expression) -> list[Violation]:
 
     Covers every predicate-bearing clause sqlglot exposes — not just
     WHERE — because the bypass class is "any clause carrying a row
-    filter," and every audit round has historically found a new
-    "we didn't check clause X" gap. Clauses scanned:
+    filter," so every such clause needs the same scan. Clauses scanned:
 
       WHERE, JOIN ON, MERGE ON, MERGE WHEN [NOT ]MATCHED AND <pred>,
       HAVING, QUALIFY, START WITH, CONNECT BY

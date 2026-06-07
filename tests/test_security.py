@@ -1,13 +1,10 @@
-"""Security regression tests — organized by ATTACK CLASS, not audit round.
+"""Security regression tests — organized by ATTACK CLASS.
 
-This is the single file that protects against every confirmed-bypass class
-from the 7 audit rounds. Each section corresponds to one defense; if any
-test here flips, an entire class of bypasses has regressed.
+This is the single file that protects against every confirmed-bypass
+class. Each section corresponds to one defense; if any test here flips,
+an entire class of bypasses has regressed.
 
-When adding a new test, put it in the section for the ATTACK it covers,
-not the round it was found in. The historical audit IDs (C-V3-1, H-V6-2,
-etc.) are preserved only as comments where the specific finding is
-load-bearing for context.
+When adding a new test, put it in the section for the ATTACK it covers.
 
 Test-organization rule of thumb:
   * The library has FOUR structural defenses (see README §"Default-deny on
@@ -45,7 +42,7 @@ def _policy(data: dict | None = None) -> Policy:
 # ===========================================================================
 @pytest.fixture
 def policy() -> Policy:
-    """The reference policy every audit ran against — tenant `orders` with
+    """The shared reference policy for these tests — tenant `orders` with
     `account_id` predicate, plus a `users` table with denied columns."""
     return _policy(
         {
@@ -603,8 +600,8 @@ class TestMultiStatementEnforcement:
 # ===========================================================================
 # Section 6 — TAUTOLOGIES  (Defense 2 — structural catchall)
 # Any WHERE/JOIN-ON leaf that doesn't reference a Column or Table is a
-# constant predicate and must be rejected. This ONE rule replaces every
-# per-function fold the v4-v6 audits enumerated.
+# constant predicate and must be rejected. This ONE structural rule
+# replaces enumerating every per-function constant fold.
 # ===========================================================================
 class TestTautologies:
     """If you're tempted to add a per-shape test here (`'1'::int = 1`,
@@ -861,10 +858,9 @@ class TestTautologies:
         )
 
     # -------------------------------------------------------------------
-    # Predicate-clause coverage regression: WHERE/JOIN ON/MERGE ON were
-    # historically the only clauses scanned. Bug rounds found bypasses
-    # via HAVING, QUALIFY, MERGE WHEN [NOT ]MATCHED, START WITH /
-    # CONNECT BY. All clauses that carry a row-filtering predicate must
+    # Predicate-clause coverage: WHERE/JOIN ON/MERGE ON are not the only
+    # clauses that carry a row filter — HAVING, QUALIFY, MERGE WHEN
+    # [NOT ]MATCHED, START WITH / CONNECT BY do too. All of them must
     # go through _scan_predicate_leaves so the structural catchall
     # promise in the README holds.
     # -------------------------------------------------------------------
@@ -1345,7 +1341,7 @@ class TestIdentifiers:
     @pytest.mark.parametrize(
         "sql",
         [
-            # C-V4-1: alias.* inside a function expands to every column
+            # alias.* inside a function expands to every column
             # of the aliased table — including denied ones.
             "SELECT to_jsonb(users.*) FROM users WHERE id = 1 LIMIT 10",
             "SELECT row_to_json(users.*) FROM users WHERE id = 1 LIMIT 10",
@@ -1390,7 +1386,7 @@ class TestIdentifiers:
         )
         assert r.allowed, [v.code.value for v in r.violations]
 
-    # --- Unresolved column qualifier (C-V7-2) ---
+    # --- Unresolved column qualifier ---
 
     @pytest.mark.parametrize(
         "sql",
@@ -1825,8 +1821,8 @@ class TestDosCaps:
     def test_cross_schema_large_tables_each_fire_limit_required(self) -> None:
         """Two same-named `large` tables in different schemas (`public.orders`,
         `analytics.orders`) must surface as TWO violations, not one. The
-        dedupe key historically used the bare table name and silently
-        swallowed the second — leaving the integrator unaware that one of
+        dedupe key must key on (table, schema): keying on the bare table
+        name alone would silently swallow the second — leaving the integrator unaware that one of
         the two tables in their query was still unbounded."""
         p = _policy(
             {
@@ -1905,7 +1901,7 @@ class TestPolicyHygiene:
         assert p.tables[0].schema_name == "public"
 
     def test_empty_policy_warns(self) -> None:
-        """M-V5-1: Policy() with no allowlist must surface unsafe defaults."""
+        """Policy() with no allowlist must surface unsafe defaults."""
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
             _policy({})

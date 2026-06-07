@@ -34,7 +34,7 @@ def check_allowlist(
     # Structural catchall: any Identifier matching a denied column name —
     # in ANY syntactic position, including JOIN USING (which doesn't show
     # up as a Column node and would otherwise slip past the column walk
-    # below. Default-deny over arms-race-style per-position rules.
+    # below). Default-deny over per-position rules.
     violations.extend(_check_denied_identifier_names(expression, policy))
 
     has_table_allowlist = bool(policy.tables)
@@ -542,10 +542,9 @@ def _check_denied_identifier_names(
     which the main allowlist walk catches. But not all — `JOIN ... USING
     (col)`, certain procedural-code references, and PG-specific syntax
     represent the column as a bare `exp.Identifier` under a parent we
-    don't enumerate. Every audit round has historically found at least
-    one new "Identifier-in-position-X" bypass. Rather than adding a
-    per-position rule each time, walk every Identifier and check the
-    name. False positives (e.g. a *column alias* literally named
+    don't enumerate. Rather than enumerate every position a column name
+    can appear in, walk every Identifier and check the name. False
+    positives (e.g. a *column alias* literally named
     `password_hash`) are conservative and acceptable — an LLM shouldn't
     alias output to a denied column name anyway.
 
