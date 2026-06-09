@@ -106,3 +106,39 @@ def test_subquery_alias_does_not_steal_unqualified_column(
     # its own scope and produces TABLE_DENIED — that's expected and
     # unrelated to the ambiguity fix.)
     assert ViolationCode.COLUMN_DENIED not in codes
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "SELECT id, (SELECT name FROM users u WHERE u.id = 1) FROM orders o",
+        "SELECT id FROM orders o WHERE o.total > (SELECT count(name) FROM users)",
+        "SELECT account_id, count(id) FROM orders GROUP BY account_id "
+        "HAVING count(id) > (SELECT count(name) FROM users)",
+        "SELECT id FROM orders ORDER BY (SELECT max(name) FROM users)",
+    ],
+)
+def test_subquery_column_not_misattributed_to_outer_table(
+    policy: Policy, sql: str
+) -> None:
+    """A nested-subquery column is checked against its own table, not the outer one."""
+    e = sqlglot.parse_one(sql, dialect="postgres")
+    codes = [v.code for v in check_allowlist(e, policy)]
+    assert ViolationCode.COLUMN_DENIED not in codes
+
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "SELECT id, (SELECT password_hash FROM users u WHERE u.id = 1) FROM orders o",
+        "SELECT id FROM users GROUP BY id HAVING max(password_hash) IS NOT NULL",
+        "SELECT name FROM orders",
+    ],
+)
+def test_denied_column_still_caught_after_scope_fix(
+    policy: Policy, sql: str
+) -> None:
+    """Denied columns still deny after the scope-ownership fix."""
+    e = sqlglot.parse_one(sql, dialect="postgres")
+    codes = [v.code for v in check_allowlist(e, policy)]
+    assert ViolationCode.COLUMN_DENIED in codes

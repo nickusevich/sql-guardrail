@@ -96,14 +96,20 @@ def check_allowlist(
             # We also skip pseudo-columns that sqlglot creates for `LIMIT ALL`
             # (`ALL` is parsed as a Column reference) — those aren't real
             # column references and the LIMIT rule handles them separately.
+            scope_expr = scope.expression
             columns_to_check: list[exp.Column] = [
-                c for c in scope.columns if not _is_limit_all_pseudo(c)
+                c
+                for c in scope.columns
+                if not _is_limit_all_pseudo(c) and _owned_by_scope(c, scope_expr)
             ]
-            select = scope.expression
-            if isinstance(select, exp.Select):
-                having = select.args.get("having")
+            if isinstance(scope_expr, exp.Select):
+                having = scope_expr.args.get("having")
                 if having is not None:
-                    columns_to_check.extend(having.find_all(exp.Column))
+                    columns_to_check.extend(
+                        c
+                        for c in having.find_all(exp.Column)
+                        if _owned_by_scope(c, scope_expr)
+                    )
 
             for column in columns_to_check:
                 _check_column_against_policy(
@@ -393,6 +399,30 @@ def _is_limit_all_pseudo(column: exp.Column) -> bool:
         return False
     parent = column.parent
     return isinstance(parent, exp.Limit)
+
+
+_QUERY_ROOTS: tuple[type[exp.Expression], ...] = (
+    exp.Select,
+    exp.Union,
+    exp.Intersect,
+    exp.Except,
+    exp.Insert,
+    exp.Update,
+    exp.Delete,
+    exp.Merge,
+)
+
+
+def _owned_by_scope(column: exp.Column, scope_expr: object) -> bool:
+    """True if `column` belongs to `scope_expr`, not a nested subquery."""
+    parent = column.parent
+    if parent is None:
+        return True
+    while parent is not None:
+        if isinstance(parent, _QUERY_ROOTS):
+            return parent is scope_expr
+        parent = parent.parent
+    return False
 
 
 def _build_alias_map(

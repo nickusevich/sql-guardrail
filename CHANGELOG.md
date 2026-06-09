@@ -4,6 +4,16 @@ Notable changes per release. See
 [GitHub Releases](https://github.com/nickusevich/sql-guardrail/releases)
 for full release notes.
 
+## [0.5.2] — 2026-06-09
+
+Bug fix: a column inside a nested subquery that referenced a second allowed
+table was misattributed to the outer table and falsely denied
+(`COLUMN_DENIED`). This affected scalar subqueries in the SELECT list, WHERE,
+HAVING, and ORDER BY. The fix is over-blocking only; no query that should have
+been denied is affected, and the public API is unchanged from 0.5.1.
+
+[0.5.2]: https://github.com/nickusevich/sql-guardrail/releases/tag/v0.5.2
+
 ## [0.5.1] — 2026-06-07
 
 Docs only: rewrote the README as a lean landing page, made its in-repo
